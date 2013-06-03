@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <parent>
+        <groupId>org.jasig.portal.overlay.dev</groupId>
+        <artifactId>myuw-dev-overlay-parent</artifactId>
+        <version>1-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>portlet-overlays</artifactId>
+    <packaging>pom</packaging>
+
+    <name>MyUW Portlets</name>
+    <description>Parent package for portlets deployed with uPortal.</description>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <configuration>
+                        <!-- tag format includes the portlet version for easy SCM reference -->
+                        <tagNameFormat>@{project.artifactId}-@{project.version}__${portlet.version}</tagNameFormat>
+                    </configuration>
+                </plugin>
+                <!-- 
+                 | Configure the war plugin to integrate the war-overlay process with JSP pre-compilation
+                 +-->
+                <plugin>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <executions>
+                        <!-- Disable all actions in the "default-war" execution in preference to the custom executions -->
+                        <execution>
+                            <id>default-war</id>
+                            <phase>none</phase>
+                        </execution>
+                        <!-- Explode the overlay during process-resources, this an earlier phase than the default war plugin behavior -->
+                        <execution>
+                            <id>build-directory-tree</id>
+                            <phase>process-resources</phase>
+                            <goals>
+                                <goal>exploded</goal>
+                            </goals>
+                        </execution>
+                        <!-- Package the final war file using the jspweb.xml from the JSPC plugin as the web.xml file -->
+                        <execution>
+                            <id>build-war</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>war</goal>
+                            </goals>
+                            <configuration>
+                                <webXml>${project.build.directory}/jspweb.xml</webXml>
+                            </configuration>
+                        </execution>
+                    </executions>
+                    <!-- Specify filtering of the webapp dir and configure the artifact being overlayed -->
+                    <configuration>
+                        <webResources>
+                            <resource>
+                                <directory>${basedir}/src/main/webapp</directory>
+                                <filtering>true</filtering>
+                            </resource>
+                        </webResources>
+                        <overlays>
+                            <overlay>
+                                <groupId>${portlet.groupId}</groupId>
+                                <artifactId>${portlet.artifactId}</artifactId>
+                                <includes>
+                                    <include>**</include>
+                                    <include>META-INF/context.xml</include>
+                                </includes>
+                            </overlay>
+                        </overlays>
+                    </configuration>
+                </plugin>
+                <!-- Define JSP Pre-Compilation -->
+                <plugin>
+                    <groupId>org.jasig.mojo.jspc</groupId>
+                    <artifactId>jspc-maven-plugin</artifactId>
+                    <version>2.0.0</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>compile</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <inputWebXml>${project.basedir}/target/${project.artifactId}/WEB-INF/web.xml</inputWebXml>
+                        <sources>
+                            <directory>${project.basedir}/target/${project.artifactId}</directory>
+                            <includes>
+                                <include>**/*.jsp</include>
+                            </includes>
+                        </sources>
+                    </configuration>
+                    <dependencies>
+                        <!-- Configure the JSP compiler, this is defined in the environment's overlay-parent -->
+                        <dependency>
+                            <groupId>${jspc.compiler.groupId}</groupId>
+                            <artifactId>${jspc.compiler.artifactId}</artifactId>
+                            <version>${jspc.compiler.version}</version>
+                        </dependency>
+                        <!-- Make sure the correct pluto portlet taglib and portlet-api dependencies are available -->
+                        <dependency>
+                            <groupId>org.apache.portals.pluto</groupId>
+                            <artifactId>pluto-taglib</artifactId>
+                            <version>${pluto.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>javax.portlet</groupId>
+                            <artifactId>portlet-api</artifactId>
+                            <version>${portlet-api.version}</version>
+                        </dependency>
+                        <!-- Pull in the portlet's classes artifact so the portlet's dependencies are all available during JSP compilation -->
+                        <dependency>
+                            <groupId>${portlet.groupId}</groupId>
+                            <artifactId>${portlet.artifactId}</artifactId>
+                            <version>${portlet.version}</version>
+                            <classifier>classes</classifier>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <!-- Configure the pluto plugin to rewrite the overlay's web.xml -->
+                <plugin>
+                    <groupId>org.apache.portals.pluto</groupId>
+                    <artifactId>maven-pluto-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>assemble</goal>
+                            </goals>
+                            <configuration>
+                                <assemblyOutputDirectory>${project.build.directory}</assemblyOutputDirectory>
+                                <archives>
+                                    <assembleArchive>${project.build.directory}/${project.build.finalName}.war</assembleArchive>
+                                </archives>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:merge="http://maven.apache.org/plugin-merge" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <parent>
+        <groupId>org.jasig.portal.overlay</groupId>
+        <artifactId>dev-overlay-parent</artifactId>
+        <!-- 
+         | Keep this in sync with the uPortal.version property
+         | *** LOOK AT LINE 31 BEFORE COMMITTING ***
+         +-->
+        <version>4.0.11</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.jasig.portal.overlay.dev</groupId>
+    <artifactId>myuw-dev-overlay-parent</artifactId>
+    <version>1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>MyUW Overlay Parent</name>
+    <description>The root project definition for the MyUW Overlay project.</description>
+
+    <properties>
+        <project.resources.tcrypt.privateKey>/my/up/etc/my-dev.example.com-private.pem</project.resources.tcrypt.privateKey>
+        
+        <!-- 
+         | Keep this in sync with the parent version
+         +-->
+        <uPortal.version>4.0.11</uPortal.version>
+        
+        <!-- JSPC compiler used by all portlet overlays -->
+        <jspc.compiler.groupId>org.jasig.mojo.jspc</jspc.compiler.groupId>
+        <jspc.compiler.artifactId>jspc-compiler-tomcat7</jspc.compiler.artifactId>
+        <jspc.compiler.version>2.0.0</jspc.compiler.version>
+    </properties>
+    
+    <scm>
+        <developerConnection>scm:git:git@github.com:UW-MultiEnvironment-Build/dev-overlay-parent.git</developerConnection>
+        <connection>scm:git:git://github.com/UW-MultiEnvironment-Build/dev-overlay-parent.git</connection>
+        <url>https://github.com/UW-MultiEnvironment-Build/dev-overlay-parent</url>
+    </scm>
+
+    <!-- TODO point to the local maven repository so the parent pom can be resolved
+    <repositories>
+        <repository>
+            <id>example.com-releases</id>
+            <url>https://example.com/maven/content/repositories/example-releases/</url>
+        </repository>
+    </repositories>
+    -->
+
+    <modules>
+        <module>portlet-overlays</module>
+    </modules>
+    
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>2.4</version>
+                    <configuration>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <!-- Allow for SNAPSHOT portlets -->
+                        <allowTimestampedSnapshots>true</allowTimestampedSnapshots>
+                        <!-- tag format includes the uportal version for easy SCM reference -->
+                        <tagNameFormat>@{project.artifactId}-@{project.version}__${uPortal.version}</tagNameFormat>
+                        <!-- Disable release resume to better deal with failed release builds -->
+                        <resume>false</resume>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>versions-maven-plugin</artifactId>
+                    <version>2.0</version>
+                    <configuration>
+                      <includes>
+                        <!-- Reduce scope of version update scanning -->
+                        <include>${project.groupId}</include>
+                      </includes>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>
