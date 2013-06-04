@@ -6,7 +6,7 @@
         <artifactId>dev-overlay-parent</artifactId>
         <!-- 
          | Keep this in sync with the uPortal.version property
-         | *** LOOK AT LINE 31 BEFORE COMMITTING ***
+         | *** LOOK AT LINE 29 BEFORE COMMITTING ***
          +-->
         <version>4.0.11_1-SNAPSHOT</version>
     </parent>
